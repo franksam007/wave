@@ -609,13 +609,19 @@ const
       const fluentPrimary = Fluent.getColorFromString(fluentPalette.themePrimary)
       if (fluentPrimary) {
         const primaryHsl = Fluent.hsv2hsl(fluentPrimary.h, fluentPrimary.s, fluentPrimary.v)
-        document.body.style.setProperty(`--saturatedPrimary`, `hsl(${primaryHsl.h}, ${primaryHsl.s > 50 ? primaryHsl.s - 30 : primaryHsl.s + 30}%, ${primaryHsl.l}%)`)
 
-        Object.keys(spectrum).forEach(spectrumColor => {
-          const { h, s, v } = Fluent.getColorFromString(cssVarValue(`$${spectrumColor}`))!
-          const spectrumHsl = Fluent.hsv2hsl(h, s, v)
-          document.body.style.setProperty(`--${spectrumColor}`, `hsl(${spectrumHsl.h}, ${primaryHsl.s}%, ${spectrumHsl.l}%)`)
-        })
+        // If saturation is 0, it means primary grayish which with added saturation results in red - not expected. 
+        if (primaryHsl.s) {
+          document.body.style.setProperty(`--saturatedPrimary`, `hsl(${primaryHsl.h}, ${primaryHsl.s > 50 ? primaryHsl.s - 30 : primaryHsl.s + 30}%, ${primaryHsl.l}%)`)
+          Object.keys(spectrum).forEach(spectrumColor => {
+            const { h, s, v } = Fluent.getColorFromString(cssVarValue(`$${spectrumColor}`))!
+            const spectrumHsl = Fluent.hsv2hsl(h, s, v)
+            document.body.style.setProperty(`--${spectrumColor}`, `hsl(${spectrumHsl.h}, ${primaryHsl.s}%, ${spectrumHsl.l}%)`)
+          })
+        }
+        else {
+          document.body.style.setProperty(`--saturatedPrimary`, fluentPalette.themePrimary)
+        }
       }
     }
 
