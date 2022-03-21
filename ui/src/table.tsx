@@ -142,7 +142,7 @@ type DataTable = {
   selection: Fluent.Selection
   isMultiple: B
   groups?: Fluent.IGroup[]
-  isCollapsedRef: React.MutableRefObject<{ [key: S]: B } | null>
+  collapsedRefs: React.MutableRefObject<{ [key: S]: B } | null | undefined>
   setFiltersInBulk: (colKey: S, filters: S[]) => void
 }
 
@@ -265,7 +265,7 @@ const
       </div>
     )
   },
-  DataTable = ({ model: m, onFilterChange, items, filteredItems, selection, selectedFilters, isMultiple, groups, isCollapsedRef, sort, setFiltersInBulk }: DataTable) => {
+  DataTable = ({ model: m, onFilterChange, items, filteredItems, selection, selectedFilters, isMultiple, groups, collapsedRefs, sort, setFiltersInBulk }: DataTable) => {
     const
       [colContextMenuList, setColContextMenuList] = React.useState<Fluent.IContextualMenuProps | null>(null),
       selectedFiltersRef = React.useRef(selectedFilters),
@@ -375,10 +375,10 @@ const
             }} />
         )
       }, []),
-      onToggleCollapseAll = (isAllCollapsed: boolean) => isCollapsedRef.current = isAllCollapsed ? null : {},
+      onToggleCollapseAll = (isAllCollapsed: B) => collapsedRefs.current = isAllCollapsed ? null : {},
       onToggleCollapse = ({ key, isCollapsed }: Fluent.IGroup) => {
-        if (isCollapsedRef.current === null) isCollapsedRef.current = {}
-        isCollapsedRef.current[key] = !isCollapsed
+        if (collapsedRefs.current === undefined || collapsedRefs.current === null) collapsedRefs.current = {}
+        collapsedRefs.current[key] = !isCollapsed
       },
       onRenderRow = (props?: Fluent.IDetailsRowProps) => props
         ? <Fluent.DetailsRow {...props} styles={{
@@ -487,7 +487,7 @@ export const
       [searchStr, setSearchStr] = React.useState(''),
       [selectedFilters, setSelectedFilters] = React.useState<Dict<S[]> | null>(null),
       [groups, setGroups] = React.useState<Fluent.IGroup[] | undefined>(),
-      isCollapsedRef = React.useRef<{ [key: S]: B } | null | undefined>(m.groups ? undefined : null),
+      collapsedRefs = React.useRef<{ [key: S]: B } | null | undefined>(m.groups ? undefined : null),
       [groupByKey, setGroupByKey] = React.useState('*'),
       groupByOptions: Fluent.IDropdownOption[] = React.useMemo(() =>
         groupable ? [{ key: '*', text: '(No Grouping)' }, ...m.columns.map(col => ({ key: col.name, text: col.label }))] : [], [m.columns, groupable]
@@ -508,23 +508,23 @@ export const
           groupedBy: Dict<any> = []
 
         const getIsCollapsed = (key: S) => {
-          if (isCollapsedRef.current === undefined) return true
-          if (isCollapsedRef.current === null) return true
-          if (Object.keys(isCollapsedRef.current).length === 0) return false
-          if (isCollapsedRef.current[key] !== undefined) return isCollapsedRef.current[key]
+          if (collapsedRefs.current === undefined) return true
+          if (collapsedRefs.current === null) return true
+          if (Object.keys(collapsedRefs.current).length === 0) return false
+          if (collapsedRefs.current[key] !== undefined) return collapsedRefs.current[key]
           return true
         }
 
         if (m.groups) {
           groups = filteredItems.reduce((acc, { group, collapsed }, idx) => {
-            if (isCollapsedRef.current === undefined && collapsed === false) isCollapsedRef.current = { [group]: collapsed }
+            if (collapsedRefs.current === undefined && collapsed === false) collapsedRefs.current = { [group]: collapsed }
             const prevGroup = acc[acc.length - 1]
             prevGroup?.key === group
               ? prevGroup.count++
               : acc.push({ key: group, name: group, startIndex: idx, count: 1, isCollapsed: getIsCollapsed(group) })
             return acc
           }, [] as Fluent.IGroup[])
-          if (isCollapsedRef.current === undefined) isCollapsedRef.current = null
+          if (collapsedRefs.current === undefined) collapsedRefs.current = null
         } else {
           groupedBy = groupByF(filteredItems, groupByKey)
           let prevSum = 0
@@ -597,7 +597,7 @@ export const
         if (option.key === '*') return
 
         setGroupByKey(option.key as S)
-        isCollapsedRef.current = null
+        collapsedRefs.current = null
         initGroups()
       },
       isSearchable = !!searchableKeys.length,
@@ -690,7 +690,7 @@ export const
 
         setGroups(undefined)
         if (m.groups) initGroups()
-        isCollapsedRef.current = undefined
+        collapsedRefs.current = undefined
         setGroupByKey(m.groups ? 'group' : '*')
 
         filter(null)
@@ -758,12 +758,12 @@ export const
       filteredItems,
       selectedFilters,
       groups,
-      isCollapsedRef,
+      collapsedRefs,
       selection,
       sort,
       isMultiple,
       setFiltersInBulk
-    }), [filteredItems, groups, isCollapsedRef, isMultiple, items, m, onFilterChange, selectedFilters, selection, sort, setFiltersInBulk])
+    }), [filteredItems, groups, collapsedRefs, isMultiple, items, m, onFilterChange, selectedFilters, selection, sort, setFiltersInBulk])
 
     return (
       <div data-test={m.name} style={{ position: 'relative', height: computeHeight() }}>
