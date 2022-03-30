@@ -8800,7 +8800,7 @@ class Dialog:
         self.name = name
         """An identifying name for this component."""
         self.events = events
-        """The events to capture on this dialog."""
+        """The events to capture on this dialog. One of 'dismissed'."""
 
     def dump(self) -> Dict:
         """Returns the contents of this object as a dict."""
@@ -8895,7 +8895,7 @@ class SidePanel:
         self.name = name
         """An identifying name for this component."""
         self.events = events
-        """The events to capture on this side panel."""
+        """The events to capture on this side panel. One of 'dismissed'."""
         self.blocking = blocking
         """True to prevent closing when clicking or tapping outside the side panel. Prevents interacting with the page behind the side panel. Defaults to False."""
 
